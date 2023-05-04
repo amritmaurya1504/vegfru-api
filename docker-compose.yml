@@ -3,8 +3,10 @@ version: "3.3"
 services:
   api:
     build: .
-    image: rajamrit15/vegfru-backend:1.0.0
+    image: rajamrit15/vegfru-api
     container_name: vegfru-api
+    env_file:
+      - env_file.env
     restart: unless-stopped
     networks:
       - app-network
