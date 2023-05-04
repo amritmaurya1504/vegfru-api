@@ -5,7 +5,7 @@ const app = express();
 const cookieParser = require("cookie-parser");
 
 // allowed domains
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:4000'];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:4000','https://vegfru.vercel.app/'];
 
 // middleware
 const cors = require("cors");
