@@ -1,0 +1,27 @@
+version: "3.3"
+
+services:
+  api:
+    build: .
+    image: rajamrit15/vegfru-backend:1.0.0
+    container_name: vegfru-api
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  proxy:
+    image: nginx:alpine
+    container_name: web-proxy
+    restart: unless-stopped
+    volumes:
+      - ./proxy.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
