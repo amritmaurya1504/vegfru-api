@@ -37,7 +37,7 @@ const PORT = process.env.PORT || 8000;
 
 // main api endpoint
 app.get("/", asyncHandler((req, res) => {
-    res.json({ message: "This is our main server endpoint!" });
+    res.json({ message: "Vegfru server endpoint!" });
 }))
 
 // User Managment API Endpoints
