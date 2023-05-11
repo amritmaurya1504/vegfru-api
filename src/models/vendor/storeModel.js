@@ -2,34 +2,59 @@ const mongoose = require("mongoose");
 
 
 const storeSchema = mongoose.Schema({
-    storeName : {
+    storeName: {
+        type: String,
+        required: true,
+    },
+    storeAddress: {
+        type: String,
+        required: true
+    },
+    landmark: {
+        type: String,
+        required: true
+    },
+    long: {
+        type: Number,
+        required: true
+    },
+    lat: {
+        type: Number,
+        required: true
+    },
+    storeType: {
+        type: String,
+        required: true
+    },
+    storeImage: {
+        type: String,
+        default: "https://previews.agefotostock.com/previewimage/medibigoff/d85902f6ece7feef44eb7dd6dfc59c07/dpa-rva-11665.jpg"
+    },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId, ref: "Vendor"
+    },
+    like: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Client"
+        }
+    ],
+    comments: [
+        {
+            comment: {
+                type: String,
+            },
+            clientId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Client"
+            }
+        }
+    ],
+    status : {
         type : String,
-        required : true,
-    },
-    storeAddress : {
-        type : String,
-        required : true
-    },
-    long : {
-        type : Number,
-        required : true
-    },
-    lat : {
-        type : Number,
-        required : true
-    },
-    storeType : {
-        type : String,
-        required : true
-    },
-    storeImage : {
-        type : String,
-        default : "https://media.istockphoto.com/id/1280995985/photo/street-vegetable-seller-showing-mobile-phone.jpg?s=612x612&w=0&k=20&c=IySJcvRMWnfe1tieuPldSWbnxkLiGwiZTrleEZzy_AQ"
-    },
-    vendorId : {
-        type : mongoose.Schema.Types.ObjectId, ref : "Vendor"
+        default : "Active"
     }
-}, { timestamps : true })
+}, { timestamps: true })
 
 const Store = mongoose.model("Store", storeSchema);
 module.exports = Store;

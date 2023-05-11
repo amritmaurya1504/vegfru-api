@@ -81,9 +81,9 @@ const login = asyncHandler(async (req, res) => {
 // Store 
 
 const addStore = asyncHandler(async (req, res) => {
-    const { storeName, storeAddress, long, lat, storeType, } = req.body;
+    const { storeName, storeAddress, long, lat, storeType, landmark, storeImage } = req.body;
     try {
-        if (!storeName || !storeAddress || !lat || !long || !storeType) {
+        if (!storeName || !storeAddress || !lat || !long || !storeType || !landmark) {
             throw new Error("You did not provide proper details for registration!")
         }
 
