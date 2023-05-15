@@ -5,7 +5,7 @@ const app = express();
 const cookieParser = require("cookie-parser");
 
 // allowed domains
-const allowedOrigins = ['https://vegfru.vercel.app', 'http://vegfru.vercel.app', 'http://localhost:3000', 'http://localhost:4000'];
+const allowedOrigins = ['https://vegfru.vercel.app', 'http://vegfru.vercel.app', 'https://vendor-tau.vercel.app', 'http://localhost:3000', 'http://localhost:4000'];
 
 // middleware
 const cors = require("cors");
@@ -22,7 +22,8 @@ const { notFound, errorHandler } = require("./src/middlewares/errorHandlers")
 
 // importing userroute
 const userRoute = require("./src/routes/userRoutes");
-const vendorRouter = require("./src/routes/vendorRoutes");
+const vendorRoute = require("./src/routes/vendorRoutes");
+const productRoute = require("./src/routes/productRoute");
 
 // initilize dotenv
 require('dotenv').config()
@@ -44,7 +45,10 @@ app.get("/", asyncHandler((req, res) => {
 app.use("/api/user", userRoute);
 
 // Vendor Managment API Endpoints
-app.use("/api/vendor", vendorRouter)
+app.use("/api/vendor", vendorRoute)
+
+// Product Managment API Endpoints
+app.use("/api/vendor/product", productRoute)
 
 // Error Handling middlewares
 app.use(notFound);
