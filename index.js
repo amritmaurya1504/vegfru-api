@@ -21,7 +21,7 @@ const asyncHandler = require("express-async-handler");
 const { notFound, errorHandler } = require("./src/middlewares/errorHandlers")
 
 // importing userroute
-const userRoute = require("./src/routes/userRoutes");
+const customerRoutes = require("./src/routes/customerRoutes");
 const vendorRoute = require("./src/routes/vendorRoutes");
 const productRoute = require("./src/routes/productRoute");
 
@@ -42,7 +42,7 @@ app.get("/", asyncHandler((req, res) => {
 }))
 
 // User Managment API Endpoints
-app.use("/api/user", userRoute);
+app.use("/api/user", customerRoutes);
 
 // Vendor Managment API Endpoints
 app.use("/api/vendor", vendorRoute)

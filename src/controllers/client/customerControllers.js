@@ -1,5 +1,6 @@
 const Client = require("../../models/client/clientModel");
 const Address = require("../../models/client/addressModel")
+const Store = require("../../models/vendor/storeModel")
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -169,5 +170,17 @@ const deleteAddress = asyncHandler(async (req, res) => {
 // update address api is in progress
 
 
-module.exports = { register, login, getLoggedUser,logout, addAddress, getAllAddress, getAddressById, deleteAddress };
+
+// get all stores api 
+const getAllStores = asyncHandler(async (req, res) => {
+    try {
+        const stores = await Store.find();
+        res.json({ success: true, stores }).status(200);
+    } catch (error) {
+        throw new Error(error);
+    }
+})
+
+
+module.exports = { register, login, getLoggedUser, logout, addAddress, getAllAddress, getAddressById, deleteAddress, getAllStores };
 
