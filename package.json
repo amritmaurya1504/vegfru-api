@@ -21,6 +21,7 @@
     "mongoose": "^7.0.4",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
+    "razorpay": "^2.8.6",
     "twilio": "^4.10.0"
   }
 }

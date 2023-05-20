@@ -24,6 +24,7 @@ const { notFound, errorHandler } = require("./src/middlewares/errorHandlers")
 const customerRoutes = require("./src/routes/customerRoutes");
 const vendorRoute = require("./src/routes/vendorRoutes");
 const productRoute = require("./src/routes/productRoute");
+const orderRoutes = require("./src/routes/orderRoutes")
 
 // initilize dotenv
 require('dotenv').config()
@@ -49,6 +50,9 @@ app.use("/api/vendor", vendorRoute)
 
 // Product Managment API Endpoints
 app.use("/api/vendor/product", productRoute)
+
+// Order Managment API Endpoints
+app.use("/api/order", orderRoutes);
 
 // Error Handling middlewares
 app.use(notFound);
