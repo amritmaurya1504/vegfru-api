@@ -4,15 +4,15 @@ const Product = require("../../models/products/productModel");
 
 
 const addProduct = asyncHandler(async (req, res) => {
-    const { productName, productImage, productCategory, productPrice, productUnit } = req.body;
+    const { productName, productImage, productCategory, productPrice, productUnit, productBaseUnit, totalAvailable } = req.body;
     const { storeId } = req.params;
     try {
-        if (!productName || !productImage || !productCategory || !productUnit || !productPrice) {
+        if (!productName || !productImage || !productCategory || !productUnit || !productPrice || !totalAvailable || !productBaseUnit) {
             res.status(422);
             throw new Error("Please provide all details!")
         }
 
-        const isProduct = await Product.findOne({ productName: productName });
+        const isProduct = await Product.findOne({ productName: productName, storeId : storeId });
         if (isProduct) {
             throw new Error("Product already listed!");
         }
@@ -75,6 +75,7 @@ const changeStatus = asyncHandler(async (req, res) => {
         throw new Error(error);
     }
 })
+
 
 
 module.exports = { addProduct, getProducts, getProductById, changeStatus }

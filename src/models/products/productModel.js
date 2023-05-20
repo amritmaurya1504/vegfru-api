@@ -17,9 +17,17 @@ const productSchema = mongoose.Schema({
         type: Number,
         requierd: true
     },
-    productUnit: {
-        type: String,
+    productBaseUnit: {
+        type: Number,
         required: true,
+    },
+    productUnit : {
+        type : String,
+        required : true
+    },
+    totalAvailable : {
+        type : Number,
+        required : true
     },
     status : {
         type : String,

@@ -145,7 +145,33 @@ const deleteStore = asyncHandler(async (req, res) => {
     }
 })
 
+const changeStoreStatus = asyncHandler(async (req, res) => {
+    const { storeId } = req.params;
+    try {
+        const findStore = await Store.findById(storeId);
+
+        // Check if the product is found
+        if (!findStore) {
+            return res.status(404).json({ message: "Store not found" });
+        }
+
+        if (findStore.vendorId === req.user._id) {
+            res.status(401);
+            throw new Error("You cannot perform this action!")
+        }
+
+        // Update the status of the product
+        findStore.status = findStore.status === "Active" ? "Closed" : "Active"; // Replace "new status" with the desired status
+        // Save the updated product
+        await findStore.save();
+
+        return res.status(200).json({ success : true ,message: "Store status updated "})
+    } catch (error) {
+        throw new Error(error)
+    }
+})
 
 
-module.exports = { register, login, addStore, getAllStore, getStoreById, deleteStore };
+
+module.exports = { register, login, addStore, getAllStore, getStoreById, deleteStore, changeStoreStatus };
 
