@@ -155,11 +155,6 @@ const changeStoreStatus = asyncHandler(async (req, res) => {
             return res.status(404).json({ message: "Store not found" });
         }
 
-        if (findStore.vendorId === req.user._id) {
-            res.status(401);
-            throw new Error("You cannot perform this action!")
-        }
-
         // Update the status of the product
         findStore.status = findStore.status === "Active" ? "Closed" : "Active"; // Replace "new status" with the desired status
         // Save the updated product
