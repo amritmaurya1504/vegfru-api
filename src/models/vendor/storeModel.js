@@ -47,6 +47,9 @@ const storeSchema = mongoose.Schema({
             clientId: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Client"
+            },
+            time : {
+                type : String
             }
         }
     ],

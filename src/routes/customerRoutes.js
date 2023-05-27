@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router(); // --> initialize express router
-const { register, login, getLoggedUser, logout , addAddress, getAllAddress, getAddressById, deleteAddress, getAllStores } = require("../controllers/client/customerControllers")
+const { register, login, getLoggedUser, logout , addAddress, getAllAddress, getAddressById, deleteAddress, getAllStores, reviewFun } = require("../controllers/client/customerControllers")
 const { isVerifiedUser } = require("../middlewares/verifyUser");
 
 
@@ -19,6 +19,9 @@ router.route("/delete-address/:addressId").delete(isVerifiedUser, deleteAddress)
 
 // get all stores
 router.route("/get-stores").get(getAllStores);
+
+// rate stores
+router.route("/store/rate").post(isVerifiedUser, reviewFun)
 
 
 module.exports = router;

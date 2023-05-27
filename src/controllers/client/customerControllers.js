@@ -174,7 +174,12 @@ const deleteAddress = asyncHandler(async (req, res) => {
 // get all stores api 
 const getAllStores = asyncHandler(async (req, res) => {
     try {
-        const stores = await Store.find();
+        const stores = await Store.find().populate(
+            {
+                path : "comments.clientId",
+                select : "name email"
+            }
+        );
         res.json({ success: true, stores }).status(200);
     } catch (error) {
         throw new Error(error);
@@ -182,5 +187,44 @@ const getAllStores = asyncHandler(async (req, res) => {
 })
 
 
-module.exports = { register, login, getLoggedUser, logout, addAddress, getAllAddress, getAddressById, deleteAddress, getAllStores };
+// Rate & Review Stores
+const reviewFun = asyncHandler(async (req, res) => {
+    const { radio, review, storeId } = req.body;
+    try {
+
+        if (!radio || !review || !storeId) {
+            res.status(422);
+            throw new Error("Please provide all details!")
+        } else {
+            const reqview = {
+                comment: review,
+                clientId: req.user._id,
+                time : new Date()
+            }
+            const findStore = await Store.findById(storeId);
+            
+
+            if (findStore) {
+                // progress..........  
+                // if(findStore.like.includes(req.user._id)){
+                //     throw new Error("You already rated!")
+                // }
+
+                const isRated = await Store.findByIdAndUpdate(storeId,
+                    { $push: { like: req.user._id, comments: reqview } },
+                    { new: true }
+                )
+
+                res.json({success : true, isRated}).status(201)
+            } else {
+                res.status(404);
+                throw new Error("Store not found!")
+            }
+        }
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
+module.exports = { register, login, getLoggedUser, logout, addAddress, getAllAddress, getAddressById, deleteAddress, getAllStores, reviewFun };
 

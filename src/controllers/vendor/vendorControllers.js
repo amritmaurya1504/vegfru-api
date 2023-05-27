@@ -105,7 +105,12 @@ const addStore = asyncHandler(async (req, res) => {
 
 const getAllStore = asyncHandler(async (req, res) => {
     try {
-        const stores = await Store.find({vendorId : req.user._id});
+        const stores = await Store.find({ vendorId: req.user._id }).populate(
+            {
+                path: "comments.clientId",
+                select: "name email"
+            }
+        );
         res.json({ success: true, stores }).status(200);
     } catch (error) {
         throw new Error(error);
@@ -115,7 +120,12 @@ const getAllStore = asyncHandler(async (req, res) => {
 const getStoreById = asyncHandler(async (req, res) => {
     const { storeId } = req.params;
     try {
-        const store = await Store.findById(storeId);
+        const store = await Store.findById(storeId).populate(
+            {
+                path: "comments.clientId",
+                select: "name email"
+            }
+        );
         res.status(200).json({ success: true, store });
     } catch (error) {
         throw new Error(error);
@@ -160,7 +170,7 @@ const changeStoreStatus = asyncHandler(async (req, res) => {
         // Save the updated product
         await findStore.save();
 
-        return res.status(200).json({ success : true ,message: "Store status updated "})
+        return res.status(200).json({ success: true, message: "Store status updated " })
     } catch (error) {
         throw new Error(error)
     }
