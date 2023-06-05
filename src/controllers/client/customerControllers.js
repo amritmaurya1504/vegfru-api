@@ -6,7 +6,9 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 
-// Authentication Controller
+//Desc Register users
+//@route POST /api/user/register
+//@access public
 
 const register = asyncHandler(async (req, res) => {
 
@@ -34,6 +36,11 @@ const register = asyncHandler(async (req, res) => {
         throw new Error(error);
     }
 });
+
+
+//Desc Login users
+//@route POST /api/user/login
+//@access public
 
 const login = asyncHandler(async (req, res) => {
     try {
@@ -76,6 +83,11 @@ const login = asyncHandler(async (req, res) => {
     }
 })
 
+
+//Desc get logged in user data
+//@route GET /api/user/
+//@access protected
+
 const getLoggedUser = asyncHandler(async (req, res) => {
     try {
         const user = await Client.findById(req.user._id);
@@ -95,7 +107,9 @@ const logout = asyncHandler(async (req, res) => {
 })
 
 
-// Address Controllers
+//Desc Add Address
+//@route POST /api/user/add-address
+//@access protected
 
 const addAddress = asyncHandler(async (req, res) => {
     const { place, long, lat, address, landmark, type } = req.body;
@@ -115,6 +129,11 @@ const addAddress = asyncHandler(async (req, res) => {
     }
 })
 
+
+//Desc Get all Address
+//@route GET /api/user/get-alladdress
+//@access protected
+
 const getAllAddress = asyncHandler(async (req, res) => {
     try {
         const getAddress = await Address.find({ userId: req.user._id });
@@ -128,6 +147,10 @@ const getAllAddress = asyncHandler(async (req, res) => {
         throw new Error(error);
     }
 })
+
+//Desc Get Address by ID
+//@route GET /api/user/get-alladdress/:addressId
+//@access protected
 
 const getAddressById = asyncHandler(async (req, res) => {
     const { addressId } = req.params;
@@ -143,6 +166,11 @@ const getAddressById = asyncHandler(async (req, res) => {
         throw new Error(error);
     }
 })
+
+
+//Desc Delete Address by ID
+//@route DELETE /api/user/delete-address/:addressId
+//@access protected
 
 const deleteAddress = asyncHandler(async (req, res) => {
     const { addressId } = req.params;
@@ -167,11 +195,8 @@ const deleteAddress = asyncHandler(async (req, res) => {
     }
 })
 
-// update address api is in progress
 
 
-
-// get all stores api 
 const getAllStores = asyncHandler(async (req, res) => {
     try {
         const stores = await Store.find().populate(

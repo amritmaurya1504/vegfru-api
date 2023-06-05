@@ -7,6 +7,7 @@ const isVerifiedVendor = asyncHandler(async (req, res, next) => {
     try {
         // geting auth tokens from cookies
         const { authorization } = req.headers;
+        // console.log("Token, " ,authorization)
 
         // checking that token is avaialable or not
         if (!authorization) {
@@ -18,7 +19,7 @@ const isVerifiedVendor = asyncHandler(async (req, res, next) => {
 
         jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
             if (err) {
-                return res.status(401).json({ error: "You Must be Loggeg in" })
+                return res.status(401).json({ error: "Invalid token!" })
             }
 
             const { _id } = payload;
