@@ -4,6 +4,7 @@ const Store = require("../../models/vendor/storeModel")
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { redisClient } = require("../../cache/client")
 
 
 //Desc Register users
@@ -37,6 +38,8 @@ const register = asyncHandler(async (req, res) => {
     }
 });
 
+// Desc Email Verification 
+// @router
 
 //Desc Login users
 //@route POST /api/user/login
@@ -199,12 +202,18 @@ const deleteAddress = asyncHandler(async (req, res) => {
 
 const getAllStores = asyncHandler(async (req, res) => {
     try {
+
+        const cachedValue = await redisClient.get("allStores")
+        if (cachedValue) return res.json({ success: true, stores: JSON.parse(cachedValue)}).status(200);
+
         const stores = await Store.find().populate(
             {
-                path : "comments.clientId",
-                select : "name email"
+                path: "comments.clientId",
+                select: "name email"
             }
         );
+        redisClient.set("allStores", JSON.stringify(stores))
+        redisClient.expire("allStores", process.env.DEFAULT_EXPIRATION)
         res.json({ success: true, stores }).status(200);
     } catch (error) {
         throw new Error(error);
@@ -224,10 +233,10 @@ const reviewFun = asyncHandler(async (req, res) => {
             const reqview = {
                 comment: review,
                 clientId: req.user._id,
-                time : new Date()
+                time: new Date()
             }
             const findStore = await Store.findById(storeId);
-            
+
 
             if (findStore) {
                 // progress..........  
@@ -240,7 +249,7 @@ const reviewFun = asyncHandler(async (req, res) => {
                     { new: true }
                 )
 
-                res.json({success : true, isRated}).status(201)
+                res.json({ success: true, isRated }).status(201)
             } else {
                 res.status(404);
                 throw new Error("Store not found!")
@@ -250,6 +259,9 @@ const reviewFun = asyncHandler(async (req, res) => {
         throw new Error(error)
     }
 })
+
+
+
 
 module.exports = { register, login, getLoggedUser, logout, addAddress, getAllAddress, getAddressById, deleteAddress, getAllStores, reviewFun };
 

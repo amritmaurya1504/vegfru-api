@@ -3,6 +3,8 @@ const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const Store = require("../../models/vendor/storeModel");
+const { redisClient } = require("../../cache/client")
+
 
 // Authentication 
 
@@ -105,12 +107,16 @@ const addStore = asyncHandler(async (req, res) => {
 
 const getAllStore = asyncHandler(async (req, res) => {
     try {
+        const cachedData = await redisClient.get("stores");
+        if(cachedData) return res.json({success : true, stores : JSON.parse(cachedData)}).status(200);
+
         const stores = await Store.find({ vendorId: req.user._id }).populate(
             {
                 path: "comments.clientId",
                 select: "name email"
             }
         );
+        redisClient.setex("stores" , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
         res.json({ success: true, stores }).status(200);
     } catch (error) {
         throw new Error(error);
@@ -120,12 +126,21 @@ const getAllStore = asyncHandler(async (req, res) => {
 const getStoreById = asyncHandler(async (req, res) => {
     const { storeId } = req.params;
     try {
+        const cachedData = await redisClient.get(`store:${storeId}`);
+        if(cachedData) {
+            console.log("cache hit")
+            return res.json({success : true, stores : JSON.parse(cachedData)}).status(200);
+        }
+
+
+        console.log("cache miss")
         const store = await Store.findById(storeId).populate(
             {
                 path: "comments.clientId",
                 select: "name email"
             }
         );
+        redisClient.setex(`store:${storeId}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(store));
         res.status(200).json({ success: true, store });
     } catch (error) {
         throw new Error(error);
