@@ -1,6 +1,7 @@
 const Razorpay = require("razorpay")
 const asyncHandler = require("express-async-handler")
 const Order = require("../../models/order/orderModel")
+const { redisClient } = require("../../cache/redisClient")
 
 var receptNumber = 1
 
@@ -39,17 +40,25 @@ const createOrder = asyncHandler(async (req, res) => {
 
 const addOrder = asyncHandler(async (req, res) => {
     try {
-        const order = new Order({...req.body, customerId : req.user._id , orderStatus : "Accepted"});
+        const order = new Order({ ...req.body, customerId: req.user._id, orderStatus: "Accepted" });
         await order.save()
-        
-        res.json({success: true ,order, body : req.body})
+
+        res.json({ success: true, order, body: req.body })
     } catch (error) {
         throw new Error(error);
     }
 })
 
+//Desc get all orders of vendor
+//@route GET /api/order/vendor/get-order
+//@access protected
+//! REDIS CACHING IS USED HERE
+
 const getOrderVendor = asyncHandler(async (req, res) => {
     try {
+        const cachedData = await redisClient.get(`vendor${req.user._id}:allOrder`);
+        if (cachedData) return res.status(200).json({ success: true, orderData: JSON.parse(cachedData) });
+
         const orderData = await Order.find({ vendorId: req.user._id })
             .populate({
                 path: "storeId",
@@ -61,6 +70,8 @@ const getOrderVendor = asyncHandler(async (req, res) => {
                 path: "toAddress",
                 select: "address place landmark"
             })
+
+        redisClient.setex(`vendor${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
@@ -68,8 +79,15 @@ const getOrderVendor = asyncHandler(async (req, res) => {
     }
 })
 
+//Desc get all orders of customer
+//@route GET /api/order/customer/get-order
+//@access protected
+//! REDIS CACHING IS USED HERE
+
 const getOrderCustomer = asyncHandler(async (req, res) => {
     try {
+        const cachedData = await redisClient.get(`customer${req.user._id}:allOrder`);
+        if (cachedData) return res.status(200).json({ success: true, orderData: JSON.parse(cachedData) });
         const orderData = await Order.find({ customerId: req.user._id })
             .populate({
                 path: "storeId",
@@ -81,16 +99,26 @@ const getOrderCustomer = asyncHandler(async (req, res) => {
                 path: "toAddress",
                 select: "address place landmark"
             })
+
+        redisClient.setex(`customer${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
         throw new Error(error)
     }
 })
+
+
+//Desc get all ordersById of vendor
+//@route GET /api/order/vendor/get-order/:orderId
+//@access protected
+//! REDIS CACHING IS USED HERE
 
 const getOrderByIdVendor = asyncHandler(async (req, res) => {
     const { _id } = req.params;
     try {
+        const cachedData = await redisClient.get(`vendor${req.user._id}:orderById:${_id}`);
+        if (cachedData) return res.status(200).json({ success: true, orderData: JSON.parse(cachedData) });
         const orderData = await Order.findById(_id)
             .populate({
                 path: "storeId",
@@ -102,6 +130,8 @@ const getOrderByIdVendor = asyncHandler(async (req, res) => {
                 path: "toAddress",
                 select: "address place landmark"
             })
+
+        redisClient.setex(`vendor:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
@@ -109,9 +139,16 @@ const getOrderByIdVendor = asyncHandler(async (req, res) => {
     }
 })
 
+//Desc get all ordersById of customer
+//@route GET /api/order/customer/get-order/:orderId
+//@access protected
+//! REDIS CACHING IS USED HERE
+
 const getOrderByIdCustomer = asyncHandler(async (req, res) => {
     const { _id } = req.params;
     try {
+        const cachedData = await redisClient.get(`customer${req.user._id}:orderById:${_id}`);
+        if (cachedData) return res.status(200).json({ success: true, orderData: JSON.parse(cachedData) });
         const orderData = await Order.findById(_id)
             .populate({
                 path: "storeId",
@@ -123,6 +160,8 @@ const getOrderByIdCustomer = asyncHandler(async (req, res) => {
                 path: "toAddress",
                 select: "address place landmark"
             })
+
+        redisClient.setex(`customer:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {

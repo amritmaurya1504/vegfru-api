@@ -6,10 +6,10 @@ const { createOrder, addOrder, getOrderVendor, getOrderCustomer, getOrderByIdCus
 
 router.route("/create-order").post(isVerifiedUser, createOrder)
 router.route("/add-order").post(isVerifiedUser, addOrder)
-router.route("/vendor/get-order").get(isVerifiedVendor, getOrderVendor)
-router.route("/customer/get-order").get(isVerifiedUser, getOrderCustomer)
-router.route("/vendor/get-order/:_id").get(isVerifiedVendor, getOrderByIdVendor )
-router.route("/customer/get-order/:_id").get(isVerifiedUser, getOrderByIdCustomer )
+router.route("/vendor/get-order").get(isVerifiedVendor, getOrderVendor) // caching done
+router.route("/customer/get-order").get(isVerifiedUser, getOrderCustomer) // caching done
+router.route("/vendor/get-order/:_id").get(isVerifiedVendor, getOrderByIdVendor ) // caching done
+router.route("/customer/get-order/:_id").get(isVerifiedUser, getOrderByIdCustomer ) // caching done
 router.route("/change-status/:orderId").patch(isVerifiedVendor, changeOrderStatus )
 
 

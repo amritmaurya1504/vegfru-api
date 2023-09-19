@@ -18,7 +18,7 @@ router.route("/delete-address/:addressId").delete(isVerifiedUser, deleteAddress)
 
 
 // get all stores
-router.route("/get-stores").get(getAllStores);
+router.route("/get-stores").get(getAllStores); // caching done
 
 // rate stores
 router.route("/store/rate").post(isVerifiedUser, reviewFun)

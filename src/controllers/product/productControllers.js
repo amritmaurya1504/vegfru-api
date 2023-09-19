@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler")
 const Product = require("../../models/products/productModel");
+const { redisClient } = require("../../cache/redisClient")
 
 
 const addProduct = asyncHandler(async (req, res) => {
@@ -28,20 +29,39 @@ const addProduct = asyncHandler(async (req, res) => {
     }
 })
 
+//Desc get all products
+//@route GET /api/vendor/product/get-product/:storeId
+//@access protected
+//! REDIS CACHING IS USED HERE
+
 const getProducts = asyncHandler(async (req, res) => {
     const { storeId } = req.params;
     try {
+
+        const cachedData = await redisClient.get(`allProducts:storeId:${storeId}`)
+        if(cachedData) return res.status(200).json({success : true, storeId : storeId, getProduct : JSON.parse(cachedData)})
+
         const getProduct = await Product.find({ storeId: storeId });
+        redisClient.setex(`allProducts:storeId:${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(getProduct))
         res.status(200).json({ success: true, storeId: storeId, getProduct });
     } catch (error) {
         throw new Error(error);
     }
 })
 
+//Desc get all products
+//@route GET /api/vendor/product/product    
+//@access protected
+//! REDIS CACHING IS USED HERE
+
 const getProductById = asyncHandler(async (req, res) => {
     const { productId } = req.params;
     try {
+        const cachedData = await redisClient.get(`product:_Id:${productId}`)
+        if(cachedData) return res.status(200).json({success : true, productId : JSON.parse(cachedData)})
+
         const product = await Product.findById(productId);
+        redisClient.setex(`product:_Id:${productId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(product))
         res.status(200).json({ success: true, product });
     } catch (error) {
         throw new Error(error);

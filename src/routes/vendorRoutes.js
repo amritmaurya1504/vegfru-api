@@ -11,8 +11,8 @@ router.route("/login").post(login);
 
 // Store routes
 router.route("/add-store").post(isVerifiedVendor, addStore);
-router.route("/get-allstore").get(isVerifiedVendor, getAllStore);
-router.route("/get-store/:storeId").get(isVerifiedVendor, getStoreById)
+router.route("/get-allstore").get(isVerifiedVendor, getAllStore); // caching done
+router.route("/get-store/:storeId").get(isVerifiedVendor, getStoreById) // caching done
 router.route("/delete-store/:storeId").delete(isVerifiedVendor, deleteStore)
 router.route("/change-status/:storeId").patch(isVerifiedVendor, changeStoreStatus)
 

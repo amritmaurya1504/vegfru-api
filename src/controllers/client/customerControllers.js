@@ -4,7 +4,7 @@ const Store = require("../../models/vendor/storeModel")
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { redisClient } = require("../../cache/client")
+const { redisClient } = require("../../cache/redisClient")
 
 
 //Desc Register users
@@ -198,7 +198,10 @@ const deleteAddress = asyncHandler(async (req, res) => {
     }
 })
 
-
+//Desc get all stores
+//@route GET /api/user/get-allstores
+//@access public
+//! REDIS CACHING IS USED HERE
 
 const getAllStores = asyncHandler(async (req, res) => {
     try {

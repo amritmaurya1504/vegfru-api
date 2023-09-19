@@ -3,11 +3,10 @@ const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const Store = require("../../models/vendor/storeModel");
-const { redisClient } = require("../../cache/client")
+const { redisClient } = require("../../cache/redisClient")
 
 
-// Authentication 
-
+// Authentication Route
 const register = asyncHandler(async (req, res) => {
 
     try {
@@ -81,6 +80,11 @@ const login = asyncHandler(async (req, res) => {
 
 // Store 
 
+
+//Desc add stores
+//@route POST /api/vendor/add-store
+//@access protected
+
 const addStore = asyncHandler(async (req, res) => {
     const { storeName, storeAddress, long, lat, storeType, landmark, storeImage } = req.body;
     try {
@@ -105,9 +109,15 @@ const addStore = asyncHandler(async (req, res) => {
     }
 })
 
+
+//Desc get all stores of vendor
+//@route GET /api/vendor/get-allstores
+//@access protected
+//! REDIS CACHING IS USED HERE
+
 const getAllStore = asyncHandler(async (req, res) => {
     try {
-        const cachedData = await redisClient.get("stores");
+        const cachedData = await redisClient.get(`stores:vendorId:${req.user._id}`);
         if(cachedData) return res.json({success : true, stores : JSON.parse(cachedData)}).status(200);
 
         const stores = await Store.find({ vendorId: req.user._id }).populate(
@@ -116,32 +126,32 @@ const getAllStore = asyncHandler(async (req, res) => {
                 select: "name email"
             }
         );
-        redisClient.setex("stores" , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        redisClient.setex(`stores:vendorId:${req.user._id}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
         res.json({ success: true, stores }).status(200);
     } catch (error) {
         throw new Error(error);
     }
 })
 
+//Desc get all stores of vendor
+//@route GET /api/vendor/get-store/:storeId
+//@access protected
+//! REDIS CACHING IS USED HERE
+
 const getStoreById = asyncHandler(async (req, res) => {
     const { storeId } = req.params;
     try {
-        const cachedData = await redisClient.get(`store:${storeId}`);
-        if(cachedData) {
-            console.log("cache hit")
-            return res.json({success : true, stores : JSON.parse(cachedData)}).status(200);
-        }
+        const cachedData = await redisClient.get(`store:_id${storeId}`);
+        if(cachedData) return res.json({success : true, stores : JSON.parse(cachedData)}).status(200);
 
-
-        console.log("cache miss")
-        const store = await Store.findById(storeId).populate(
+        const stores = await Store.findById(storeId).populate(
             {
                 path: "comments.clientId",
                 select: "name email"
-            }
+            }   
         );
-        redisClient.setex(`store:${storeId}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(store));
-        res.status(200).json({ success: true, store });
+        redisClient.setex(`store:_id${storeId}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        res.status(200).json({ success: true, stores });
     } catch (error) {
         throw new Error(error);
     }
