@@ -2,6 +2,9 @@ const express = require("express")
 const app = express();
 const responseTime = require("response-time");
 
+// initilize dotenv
+require('dotenv').config()
+
 // import cookie-parser
 const cookieParser = require("cookie-parser");
 
@@ -27,9 +30,7 @@ const customerRoutes = require("./src/routes/customerRoutes");
 const vendorRoute = require("./src/routes/vendorRoutes");
 const productRoute = require("./src/routes/productRoute");
 const orderRoutes = require("./src/routes/orderRoutes")
-
-// initilize dotenv
-require('dotenv').config()
+const paymentRoutes = require("./src/routes/paymentRoutes");
 
 // database connection
 const connectDB = require("./src/db/config");
@@ -55,6 +56,9 @@ app.use("/api/vendor/product", productRoute)
 
 // Order Managment API Endpoints
 app.use("/api/order", orderRoutes);
+
+// Payment Managemnt API Endpoints
+app.use("/api/stripe", paymentRoutes);
 
 // Error Handling middlewares
 app.use(notFound);

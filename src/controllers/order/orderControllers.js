@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler")
 const Order = require("../../models/order/orderModel")
 const { redisClient } = require("../../cache/redisClient")
 
+
 var receptNumber = 1
 
 // Order creation (Razorpay)
@@ -36,7 +37,7 @@ const createOrder = asyncHandler(async (req, res) => {
     }
 })
 
-// Order add to database
+// Order add to database (Razorpay)
 
 const addOrder = asyncHandler(async (req, res) => {
     try {

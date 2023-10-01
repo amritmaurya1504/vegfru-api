@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
 const orderSchema = mongoose.Schema({
-    orderDate : {
-        type : String
+    orderDate: {
+        type: String
     },
     billDetails: {
         type: {
@@ -12,36 +12,39 @@ const orderSchema = mongoose.Schema({
             totalBill: Number
         }
     },
-    customerId : {
-        type : mongoose.Schema.Types.ObjectId, ref : "Client"
+    customerId: {
+        type: mongoose.Schema.Types.ObjectId, ref: "Client"
     },
-    vendorId : {
-        type : mongoose.Schema.Types.ObjectId, ref : "Vendor"
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId, ref: "Vendor"
     },
-    receipt : {
-        type : String
+    receipt: {
+        type: String
     },
-    storeId : {
-        type : mongoose.Schema.Types.ObjectId, ref : "Store"
+    storeId: {
+        type: mongoose.Schema.Types.ObjectId, ref: "Store"
     },
-    toAddress : {
-        type : mongoose.Schema.Types.ObjectId, ref : "Address"
+    toAddress: {
+        type: mongoose.Schema.Types.ObjectId, ref: "Address"
     },
-    itemsOrdered : {
-        type : Array,
-        default : []
+    itemsOrdered: {
+        type: Array,
+        default: []
     },
-    paymentDetails : {
+    paymentDetails: {
         type: {
             orderId: String,
+            intentId: String,
+            created: String,
             paymentId: String,
-            signature: String
+            payment_method_types: String,
+            payment_status: String
         }
     },
-    orderStatus : {
-        type : String
+    orderStatus: {
+        type: String
     }
-}, { timestamps : true } )
+}, { timestamps: true })
 
 
 const Order = mongoose.model("Order", orderSchema);
