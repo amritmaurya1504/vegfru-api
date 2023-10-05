@@ -6,29 +6,26 @@ const asyncHandler = require("express-async-handler")
 const isVerifiedUser = asyncHandler(async (req, res, next) => {
     try {
         // geting auth tokens from cookies
-        const { authorization } = req.headers;
-
+        const { accessToken } = req.cookies;
         // checking that token is avaialable or not
-        if (!authorization) {
+
+        if (!accessToken) {
             res.status(401);
-            throw new Error("You Must be Logged in")
+            throw new Error("Please Provide token!")
+        }
+        
+        const decodeToken = jwt.verify(accessToken, process.env.JWT_ACCESS_TOKEN_SECRET);
+        try {
+            req.user = await Client.findById(decodeToken._id);
+            next();
+        } catch (error) {
+            return res.status(401).json({
+                error: "Some Problem in Cookies or Invalid Token!",
+            });
         }
 
-        const token = authorization.replace("Bearer ", "");
-
-        jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
-            if (err) {
-                return res.status(401).json({ error: "You Must be Loggeg in" })
-            }
-
-            const { _id } = payload;
-            Client.findById(_id).then(userData => {
-                req.user = userData;
-                next();
-            })
-        })
-
     } catch (error) {
+        res.status(401);
         throw new Error(error);
     }
 })

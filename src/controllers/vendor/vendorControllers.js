@@ -52,7 +52,7 @@ const login = asyncHandler(async (req, res) => {
                 // making user password undefined
                 userLogin.password = undefined;
                 // generate token for authentication purpose
-                const token = jwt.sign({ _id: userLogin._id }, process.env.JWT_SECRET);
+                const token = jwt.sign({ _id: userLogin._id }, process.env.JWT_ACCESS_TOKEN_SECRET);
 
                 // storing token to cookie and sending success message to frontend
                 res

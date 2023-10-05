@@ -6,7 +6,7 @@ const { isVerifiedVendor } = require("../middlewares/verifyVendor")
 
 // product router
 router.route("/add-product/:storeId").post(isVerifiedVendor, addProduct)
-router.route("/get-product/:storeId").get(isVerifiedVendor, getProducts) // caching done
+router.route("/get-product/:storeId").get(getProducts) // caching done
 router.route("/product/:productId").get(isVerifiedVendor, getProductById) // caching done
 router.route("/change-status/:productId").patch(isVerifiedVendor, changeStatus);
 

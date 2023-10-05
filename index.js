@@ -14,8 +14,8 @@ const allowedOrigins = ['https://vegfru.vercel.app', 'http://vegfru.vercel.app',
 // middleware
 const cors = require("cors");
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
+    credentials: true,
+    origin: allowedOrigins
 }));
 app.use(express.json());
 app.use(cookieParser());

@@ -2,9 +2,9 @@ const Client = require("../../models/client/clientModel");
 const Address = require("../../models/client/addressModel")
 const Store = require("../../models/vendor/storeModel")
 const asyncHandler = require("express-async-handler");
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { redisClient } = require("../../cache/redisClient")
+const { redisClient } = require("../../cache/redisClient");
+const { generateTokens, verifyRefreshToken } = require("../../util");
 
 
 //Desc Register users
@@ -65,16 +65,27 @@ const login = asyncHandler(async (req, res) => {
             } else {
                 // making user password undefined
                 userLogin.password = undefined;
-                // generate token for authentication purpose
-                const token = jwt.sign({ _id: userLogin._id }, process.env.JWT_SECRET);
 
-                // storing token to cookie and sending success message to frontend
+                // generate token for authentication purpose
+                const { accessToken, refreshToken } = generateTokens({ _id: userLogin._id });
+                // console.log(accessToken, refreshToken);
+                // // storing token to cookie and sending success message to frontend
+                res.cookie('refreshToken', refreshToken, {
+                    maxAge: 1000 * 60 * 60 * 24 * 30,
+                    httpOnly: true,
+                });
+
+                res.cookie('accessToken', accessToken, {
+                    maxAge: 1000 * 60 * 60 * 24 * 30,
+                    httpOnly: true,
+                });
+
                 res
                     .status(201)
                     .json({
+                        auth: true,
                         message: "User Login Sucessfully!",
-                        userLogin,
-                        token
+                        userLogin
                     });
             }
         } else {
@@ -100,15 +111,59 @@ const getLoggedUser = asyncHandler(async (req, res) => {
     }
 });
 
+
 const logout = asyncHandler(async (req, res) => {
-    try {
-        res.clearCookie("token");
-        res.status(200).json({ success: true });
-    } catch (error) {
-        throw new Error(error)
-    }
+    const { refreshToken } = req.cookies;
+    // delete refresh token from db or cache
+    // await tokenService.removeToken(refreshToken);
+
+    // delete cookies
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
+    res.json({ user: null, auth: false });
 })
 
+
+const refresh = asyncHandler(async (req, res) => {
+    // 1. get refresh token
+    const { refreshToken: refreshTokenFromCookie } = req.cookies;
+
+    if (!refreshTokenFromCookie) {
+        res.status(422).json({ auth: false });
+    }
+
+    // 2. check if token is valid
+    let userData;
+    try {
+
+        userData = await verifyRefreshToken(refreshTokenFromCookie);
+
+    } catch (error) {
+        res.status(401);
+        throw new Error(error);
+    }
+    // 3. Check if token is in db
+
+    // 4. check if valid user
+
+    // 5. Generate new tokens
+    const { accessToken, refreshToken } = generateTokens({ _id: userData._id });
+
+    // 6. Update refresh token
+
+    // 7. put in cookie
+    res.cookie('refreshToken', refreshToken, {
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+        httpOnly: true,
+    });
+
+    res.cookie('accessToken', accessToken, {
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+        httpOnly: true,
+    });
+
+    res.json({ user: userData, success: true })
+})
 
 //Desc Add Address
 //@route POST /api/user/add-address
@@ -207,7 +262,7 @@ const getAllStores = asyncHandler(async (req, res) => {
     try {
 
         const cachedValue = await redisClient.get("allStores")
-        if (cachedValue) return res.json({ success: true, stores: JSON.parse(cachedValue)}).status(200);
+        if (cachedValue) return res.json({ success: true, stores: JSON.parse(cachedValue) }).status(200);
 
         const stores = await Store.find().populate(
             {
@@ -223,6 +278,26 @@ const getAllStores = asyncHandler(async (req, res) => {
     }
 })
 
+//! REDIS CACHING IS USED HERE
+
+const getStoreById = asyncHandler(async (req, res) => {
+    const { storeId } = req.params;
+    try {
+        const cachedData = await redisClient.get(`store:_id${storeId}`);
+        if(cachedData) return res.json({success : true, stores : JSON.parse(cachedData)}).status(200);
+
+        const stores = await Store.findById(storeId).populate(
+            {
+                path: "comments.clientId",
+                select: "name email"
+            }   
+        );
+        redisClient.setex(`store:_id${storeId}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        res.status(200).json({ success: true, stores });
+    } catch (error) {
+        throw new Error(error);
+    }
+})
 
 // Rate & Review Stores
 const reviewFun = asyncHandler(async (req, res) => {
@@ -263,8 +338,24 @@ const reviewFun = asyncHandler(async (req, res) => {
     }
 })
 
+//! REDIS CACHING IS USED HERE
+
+const getProducts = asyncHandler(async (req, res) => {
+    const { storeId } = req.params;
+    try {
+
+        const cachedData = await redisClient.get(`allProducts:storeId:${storeId}`)
+        if(cachedData) return res.status(200).json({success : true, storeId : storeId, getProduct : JSON.parse(cachedData)})
+
+        const getProduct = await Product.find({ storeId: storeId });
+        redisClient.setex(`allProducts:storeId:${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(getProduct))
+        res.status(200).json({ success: true, storeId: storeId, getProduct });
+    } catch (error) {
+        throw new Error(error);
+    }
+})
 
 
 
-module.exports = { register, login, getLoggedUser, logout, addAddress, getAllAddress, getAddressById, deleteAddress, getAllStores, reviewFun };
+module.exports = { register, login, getLoggedUser, logout, refresh, addAddress, getAllAddress, getAddressById, getStoreById, deleteAddress, getAllStores, getProducts, reviewFun };
 

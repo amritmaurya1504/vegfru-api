@@ -12,11 +12,12 @@ const createCheckoutSession = asyncHandler(
     async (req, res, next) => {
         try {
             const { orderData } = req.body;
+            console.log(orderData);
             const currentDate = new Date();
             const customer = await stripe.customers.create({
                 metadata: {
                     user_id: req.user._id.toString(),
-                    date: currentDate.getTime()
+                    date: currentDate.getTime(),
                 }
             })
 
@@ -70,45 +71,50 @@ const createCheckoutSession = asyncHandler(
 );
 
 const paymentWebHook = async (req, res) => {
-    const sig = req.headers['stripe-signature'];
+    try {
+        const sig = req.headers['stripe-signature'];
 
-    let eventType;
-    let data;
+        let eventType;
+        let data;
 
-    if (endpointSecret) {
-        let event;
-        try {
-            event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-        } catch (err) {
-            res.status(400).send(`Webhook Error: ${err.message}`);
-            return;
-        }
-
-        data = event.data.object;
-        eventType = event.type;
-    } else {
-        data = req.body.data.object;
-        eventType = req.body.type;
-    }
-
-
-    if (eventType === "checkout.session.completed") {
-        try {
-            const customer = await stripe.customers.retrieve(data.customer);
-            console.log(`orderData${customer.metadata.user_id}:${customer.metadata.date}`)
-            const cachedData = await redisClient.get(`orderData:userId:${customer.metadata.user_id}:${customer.metadata.date}`);
-            if (cachedData) {
-                paymentConfirmationMail(data, JSON.parse(cachedData));
-                saveToDB(JSON.parse(cachedData), data, customer);
-            } else {
-                console.log("Cached data not found.");
+        if (endpointSecret) {
+            let event;
+            try {
+                event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+            } catch (err) {
+                res.status(400).send(`Webhook Error: ${err.message}`);
+                return;
             }
-        } catch (error) {
-            console.error("Error retrieving customer data:", error);
+
+            data = event.data.object;
+            eventType = event.type;
+        } else {
+            data = req.body.data.object;
+            eventType = req.body.type;
         }
+
+
+        if (eventType === "checkout.session.completed") {
+            try {
+                const customer = await stripe.customers.retrieve(data.customer);
+                console.log(`orderData${customer.metadata.user_id}:${customer.metadata.date}`)
+                const cachedData = await redisClient.get(`orderData:userId:${customer.metadata.user_id}:${customer.metadata.date}`);
+                if (cachedData) {
+                    console.log("Inside cacheddata if condition")
+                    paymentConfirmationMail(data, JSON.parse(cachedData));
+                    saveToDB(JSON.parse(cachedData), data, customer);
+                } else {
+                    console.log("Cached data not found.");
+                }
+            } catch (error) {
+                console.error("Error retrieving customer data:", error);
+            }
+        }
+        // Return a 200 res to acknowledge receipt of the event
+        res.send();
+    } catch (error) {
+        console.log(error);
     }
-    // Return a 200 res to acknowledge receipt of the event
-    res.send();
 
 };
 
@@ -144,7 +150,7 @@ const paymentConfirmationMail = asyncHandler(async (intent, cachedData) => {
         let response = {
             body: {
                 name: intent.customer_details.name,
-                intro: `Thank you for placing an order with us. Your Order/Payment details are as follows 👉 Total Bill : ${cachedData?.billDetails?.totalBill}, PaymentId : ${intent.payment_intent}, OrderId : ${intent.created}`,
+                intro: `Thank you for placing an order with us. Your Order/Payment details are as follows.`,
                 table: {
                     data: lineItems
                 },
@@ -156,7 +162,7 @@ const paymentConfirmationMail = asyncHandler(async (intent, cachedData) => {
                         link: `${process.env.CLIENT_URL}`
                     }
                 },
-                outro: 'If you have any questions or need further assistance, please contact our customer support.'
+                outro: `Payment ID: <strong>${intent.payment_intent}</strong>, Total Bill: <strong>${cachedData?.billDetails?.totalBill}</strong>, OrderId : <strong>${intent.created}</strong>. If you have any questions or need further assistance, please contact our customer support.`
             }
         };
 
@@ -169,7 +175,10 @@ const paymentConfirmationMail = asyncHandler(async (intent, cachedData) => {
             html: mail
         }
 
+        console.log(message);
+
         const info = await transporter.sendMail(message);
+        console.log(info);
 
         console.log(info.messageId);
     } catch (error) {
