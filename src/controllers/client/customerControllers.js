@@ -73,11 +73,15 @@ const login = asyncHandler(async (req, res) => {
                 res.cookie('refreshToken', refreshToken, {
                     maxAge: 1000 * 60 * 60 * 24 * 30,
                     httpOnly: true,
+                    sameSite: 'none',
+                    secure: true
                 });
 
                 res.cookie('accessToken', accessToken, {
                     maxAge: 1000 * 60 * 60 * 24 * 30,
                     httpOnly: true,
+                    sameSite: 'none',
+                    secure: true
                 });
 
                 res
@@ -155,11 +159,15 @@ const refresh = asyncHandler(async (req, res) => {
     res.cookie('refreshToken', refreshToken, {
         maxAge: 1000 * 60 * 60 * 24 * 30,
         httpOnly: true,
+        sameSite: 'none',
+        secure: true
     });
 
     res.cookie('accessToken', accessToken, {
         maxAge: 1000 * 60 * 60 * 24 * 30,
         httpOnly: true,
+        sameSite: 'none',
+        secure: true
     });
 
     res.json({ user: userData, success: true })
@@ -284,15 +292,15 @@ const getStoreById = asyncHandler(async (req, res) => {
     const { storeId } = req.params;
     try {
         const cachedData = await redisClient.get(`store:_id${storeId}`);
-        if(cachedData) return res.json({success : true, stores : JSON.parse(cachedData)}).status(200);
+        if (cachedData) return res.json({ success: true, stores: JSON.parse(cachedData) }).status(200);
 
         const stores = await Store.findById(storeId).populate(
             {
                 path: "comments.clientId",
                 select: "name email"
-            }   
+            }
         );
-        redisClient.setex(`store:_id${storeId}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        redisClient.setex(`store:_id${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
         res.status(200).json({ success: true, stores });
     } catch (error) {
         throw new Error(error);
@@ -345,7 +353,7 @@ const getProducts = asyncHandler(async (req, res) => {
     try {
 
         const cachedData = await redisClient.get(`allProducts:storeId:${storeId}`)
-        if(cachedData) return res.status(200).json({success : true, storeId : storeId, getProduct : JSON.parse(cachedData)})
+        if (cachedData) return res.status(200).json({ success: true, storeId: storeId, getProduct: JSON.parse(cachedData) })
 
         const getProduct = await Product.find({ storeId: storeId });
         redisClient.setex(`allProducts:storeId:${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(getProduct))
