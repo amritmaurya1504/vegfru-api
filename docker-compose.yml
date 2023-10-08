@@ -1,29 +1,23 @@
 version: "3.3"
 
 services:
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    restart: always
+    network_mode: bridge
+    expose:
+      - 6379
+  
   api:
     build: .
-    image: rajamrit15/vegfru-api
-    container_name: vegfru-api
-    env_file:
-      - env_file.env
-    restart: unless-stopped
-    networks:
-      - app-network
-
-  proxy:
-    image: nginx:alpine
-    container_name: web-proxy
-    restart: unless-stopped
-    volumes:
-      - ./proxy.conf:/etc/nginx/conf.d/default.conf
+    container_name: api
+    restart: always
+    network_mode: bridge
     ports:
-      - 80:80
-    depends_on:
-      - api
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+      - 8000:8000
+    volumes:
+      - .:/app
+      - /app/node_modules
+    links:
+      - redis

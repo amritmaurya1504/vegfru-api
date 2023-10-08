@@ -1,6 +1,6 @@
 const express = require("express")
 const app = express();
-const responseTime = require("response-time");
+
 
 // initilize dotenv
 require('dotenv').config()
@@ -19,7 +19,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(responseTime());
 
 // error handler
 const asyncHandler = require("express-async-handler");
