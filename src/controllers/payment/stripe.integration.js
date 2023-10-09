@@ -38,8 +38,8 @@ const createCheckoutSession = asyncHandler(
                 line_items: lineItems,
                 customer: customer.id,
                 mode: "payment",
-                success_url: "http://localhost:4000/route/success",
-                cancel_url: "http://localhost:4000/route/cancel",
+                success_url: `${process.env.CLIENT_URL}/route/success`,
+                cancel_url: `${process.env.CLIENT_URL}/route/cancel`,
                 shipping_options: [
                     {
                         shipping_rate_data: {
