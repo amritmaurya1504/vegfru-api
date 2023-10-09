@@ -3,7 +3,7 @@ const Address = require("../../models/client/addressModel")
 const Store = require("../../models/vendor/storeModel")
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
-const { redisClient } = require("../../cache/redisClient");
+const { client } = require("../../cache/redisClient");
 const { generateTokens, verifyRefreshToken } = require("../../util");
 
 
@@ -269,7 +269,7 @@ const deleteAddress = asyncHandler(async (req, res) => {
 const getAllStores = asyncHandler(async (req, res) => {
     try {
 
-        const cachedValue = await redisClient.get("allStores")
+        const cachedValue = await client.get("allStores")
         if (cachedValue) return res.json({ success: true, stores: JSON.parse(cachedValue) }).status(200);
 
         const stores = await Store.find().populate(
@@ -278,8 +278,8 @@ const getAllStores = asyncHandler(async (req, res) => {
                 select: "name email"
             }
         );
-        redisClient.set("allStores", JSON.stringify(stores))
-        redisClient.expire("allStores", process.env.DEFAULT_EXPIRATION)
+        client.set("allStores", JSON.stringify(stores))
+        client.expire("allStores", process.env.DEFAULT_EXPIRATION)
         res.json({ success: true, stores }).status(200);
     } catch (error) {
         throw new Error(error);
@@ -291,7 +291,7 @@ const getAllStores = asyncHandler(async (req, res) => {
 const getStoreById = asyncHandler(async (req, res) => {
     const { storeId } = req.params;
     try {
-        const cachedData = await redisClient.get(`store:_id${storeId}`);
+        const cachedData = await client.get(`store:_id${storeId}`);
         if (cachedData) return res.json({ success: true, stores: JSON.parse(cachedData) }).status(200);
 
         const stores = await Store.findById(storeId).populate(
@@ -300,7 +300,7 @@ const getStoreById = asyncHandler(async (req, res) => {
                 select: "name email"
             }
         );
-        redisClient.setex(`store:_id${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        client.setex(`store:_id${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
         res.status(200).json({ success: true, stores });
     } catch (error) {
         throw new Error(error);
@@ -352,11 +352,11 @@ const getProducts = asyncHandler(async (req, res) => {
     const { storeId } = req.params;
     try {
 
-        const cachedData = await redisClient.get(`allProducts:storeId:${storeId}`)
+        const cachedData = await client.get(`allProducts:storeId:${storeId}`)
         if (cachedData) return res.status(200).json({ success: true, storeId: storeId, getProduct: JSON.parse(cachedData) })
 
         const getProduct = await Product.find({ storeId: storeId });
-        redisClient.setex(`allProducts:storeId:${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(getProduct))
+        client.setex(`allProducts:storeId:${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(getProduct))
         res.status(200).json({ success: true, storeId: storeId, getProduct });
     } catch (error) {
         throw new Error(error);

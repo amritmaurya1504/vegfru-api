@@ -1,7 +1,7 @@
 const Razorpay = require("razorpay")
 const asyncHandler = require("express-async-handler")
 const Order = require("../../models/order/orderModel")
-const { redisClient } = require("../../cache/redisClient")
+const { client } = require("../../cache/redisClient")
 
 
 var receptNumber = 1
@@ -57,7 +57,7 @@ const addOrder = asyncHandler(async (req, res) => {
 
 const getOrderVendor = asyncHandler(async (req, res) => {
     try {
-        const cachedData = await redisClient.get(`vendor${req.user._id}:allOrder`);
+        const cachedData = await client.get(`vendor${req.user._id}:allOrder`);
         if (cachedData) return res.status(200).json({ success: true, orderData: JSON.parse(cachedData) });
 
         const orderData = await Order.find({ vendorId: req.user._id })
@@ -72,7 +72,7 @@ const getOrderVendor = asyncHandler(async (req, res) => {
                 select: "address place landmark"
             })
 
-        redisClient.setex(`vendor${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
+        client.setex(`vendor${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
@@ -87,7 +87,7 @@ const getOrderVendor = asyncHandler(async (req, res) => {
 
 const getOrderCustomer = asyncHandler(async (req, res) => {
     try {
-        const cachedData = await redisClient.get(`customer${req.user._id}:allOrder`);
+        const cachedData = await client.get(`customer${req.user._id}:allOrder`);
         if (cachedData) return res.status(200).json({ success: true, orderData: JSON.parse(cachedData) });
         const orderData = await Order.find({ customerId: req.user._id })
             .populate({
@@ -101,7 +101,7 @@ const getOrderCustomer = asyncHandler(async (req, res) => {
                 select: "address place landmark"
             })
 
-        redisClient.setex(`customer${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
+        client.setex(`customer${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
@@ -118,7 +118,7 @@ const getOrderCustomer = asyncHandler(async (req, res) => {
 const getOrderByIdVendor = asyncHandler(async (req, res) => {
     const { _id } = req.params;
     try {
-        const cachedData = await redisClient.get(`vendor${req.user._id}:orderById:${_id}`);
+        const cachedData = await client.get(`vendor${req.user._id}:orderById:${_id}`);
         if (cachedData) return res.status(200).json({ success: true, orderData: JSON.parse(cachedData) });
         const orderData = await Order.findById(_id)
             .populate({
@@ -132,7 +132,7 @@ const getOrderByIdVendor = asyncHandler(async (req, res) => {
                 select: "address place landmark"
             })
 
-        redisClient.setex(`vendor:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
+        client.setex(`vendor:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
@@ -148,7 +148,7 @@ const getOrderByIdVendor = asyncHandler(async (req, res) => {
 const getOrderByIdCustomer = asyncHandler(async (req, res) => {
     const { _id } = req.params;
     try {
-        const cachedData = await redisClient.get(`customer${req.user._id}:orderById:${_id}`);
+        const cachedData = await client.get(`customer${req.user._id}:orderById:${_id}`);
         if (cachedData) return res.status(200).json({ success: true, orderData: JSON.parse(cachedData) });
         const orderData = await Order.findById(_id)
             .populate({
@@ -162,7 +162,7 @@ const getOrderByIdCustomer = asyncHandler(async (req, res) => {
                 select: "address place landmark"
             })
 
-        redisClient.setex(`customer:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
+        client.setex(`customer:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {

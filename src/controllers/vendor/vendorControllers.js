@@ -3,7 +3,7 @@ const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const Store = require("../../models/vendor/storeModel");
-const { redisClient } = require("../../cache/redisClient")
+const { client } = require("../../cache/redisClient")
 
 
 // Authentication Route
@@ -117,7 +117,7 @@ const addStore = asyncHandler(async (req, res) => {
 
 const getAllStore = asyncHandler(async (req, res) => {
     try {
-        const cachedData = await redisClient.get(`stores:vendorId:${req.user._id}`);
+        const cachedData = await client.get(`stores:vendorId:${req.user._id}`);
         if(cachedData) return res.json({success : true, stores : JSON.parse(cachedData)}).status(200);
 
         const stores = await Store.find({ vendorId: req.user._id }).populate(
@@ -126,7 +126,7 @@ const getAllStore = asyncHandler(async (req, res) => {
                 select: "name email"
             }
         );
-        redisClient.setex(`stores:vendorId:${req.user._id}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        client.setex(`stores:vendorId:${req.user._id}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
         res.json({ success: true, stores }).status(200);
     } catch (error) {
         throw new Error(error);
@@ -141,7 +141,7 @@ const getAllStore = asyncHandler(async (req, res) => {
 const getStoreById = asyncHandler(async (req, res) => {
     const { storeId } = req.params;
     try {
-        const cachedData = await redisClient.get(`store:_id${storeId}`);
+        const cachedData = await client.get(`store:_id${storeId}`);
         if(cachedData) return res.json({success : true, stores : JSON.parse(cachedData)}).status(200);
 
         const stores = await Store.findById(storeId).populate(
@@ -150,7 +150,7 @@ const getStoreById = asyncHandler(async (req, res) => {
                 select: "name email"
             }   
         );
-        redisClient.setex(`store:_id${storeId}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        client.setex(`store:_id${storeId}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
         res.status(200).json({ success: true, stores });
     } catch (error) {
         throw new Error(error);
