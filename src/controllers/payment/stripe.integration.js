@@ -3,7 +3,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY)
 const nodemailer = require("nodemailer")
 const MailGen = require("mailgen")
 const Order = require("../../models/order/orderModel")
-const { redisClient } = require("../../cache/redisClient");
+const { client } = require("../../cache/redisClient");
 const asyncHandler = require("express-async-handler")
 let endpointSecret;
 
@@ -60,7 +60,7 @@ const createCheckoutSession = asyncHandler(
             });
 
             // storing order data to temporary cache
-            redisClient.setex(`orderData:userId:${req.user._id}:${currentDate.getTime()}`, process.env.DEFAULT_EXPIRATION_FOR_ORDER, JSON.stringify(orderData));
+            client.setex(`orderData:userId:${req.user._id}:${currentDate.getTime()}`, process.env.DEFAULT_EXPIRATION_FOR_ORDER, JSON.stringify(orderData));
 
             res.json({ id: session.id });
 
@@ -98,7 +98,7 @@ const paymentWebHook = async (req, res) => {
             try {
                 const customer = await stripe.customers.retrieve(data.customer);
                 console.log(`orderData${customer.metadata.user_id}:${customer.metadata.date}`)
-                const cachedData = await redisClient.get(`orderData:userId:${customer.metadata.user_id}:${customer.metadata.date}`);
+                const cachedData = await client.get(`orderData:userId:${customer.metadata.user_id}:${customer.metadata.date}`);
                 if (cachedData) {
                     console.log("Inside cacheddata if condition")
                     paymentConfirmationMail(data, JSON.parse(cachedData));
