@@ -300,7 +300,8 @@ const getStoreById = asyncHandler(async (req, res) => {
                 select: "name email"
             }
         );
-        client.setex(`store:_id${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        client.set(`store:_id${storeId}`, JSON.stringify(stores));
+        client.expire(`store:_id${storeId}`, process.env.DEFAULT_EXPIRATION)
         res.status(200).json({ success: true, stores });
     } catch (error) {
         throw new Error(error);
@@ -356,7 +357,8 @@ const getProducts = asyncHandler(async (req, res) => {
         if (cachedData) return res.status(200).json({ success: true, storeId: storeId, getProduct: JSON.parse(cachedData) })
 
         const getProduct = await Product.find({ storeId: storeId });
-        client.setex(`allProducts:storeId:${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(getProduct))
+        client.set(`allProducts:storeId:${storeId}`, JSON.stringify(getProduct))
+        client.expire(`allProducts:storeId:${storeId}`, process.env.DEFAULT_EXPIRATION)
         res.status(200).json({ success: true, storeId: storeId, getProduct });
     } catch (error) {
         throw new Error(error);

@@ -60,8 +60,8 @@ const createCheckoutSession = asyncHandler(
             });
 
             // storing order data to temporary cache
-            client.setex(`orderData:userId:${req.user._id}:${currentDate.getTime()}`, process.env.DEFAULT_EXPIRATION_FOR_ORDER, JSON.stringify(orderData));
-
+            client.set(`orderData:userId:${req.user._id}:${currentDate.getTime()}`, JSON.stringify(orderData));
+            client.expire(`orderData:userId:${req.user._id}:${currentDate.getTime()}`, process.env.DEFAULT_EXPIRATION_FOR_ORDER)
             res.json({ id: session.id });
 
         } catch (error) {

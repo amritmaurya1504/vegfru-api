@@ -42,7 +42,8 @@ const getProducts = asyncHandler(async (req, res) => {
         if(cachedData) return res.status(200).json({success : true, storeId : storeId, getProduct : JSON.parse(cachedData)})
 
         const getProduct = await Product.find({ storeId: storeId });
-        client.setex(`allProducts:storeId:${storeId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(getProduct))
+        client.set(`allProducts:storeId:${storeId}`, JSON.stringify(getProduct))
+        client.expire(`allProducts:storeId:${storeId}`, process.env.DEFAULT_EXPIRATION)
         res.status(200).json({ success: true, storeId: storeId, getProduct });
     } catch (error) {
         throw new Error(error);
@@ -61,7 +62,8 @@ const getProductById = asyncHandler(async (req, res) => {
         if(cachedData) return res.status(200).json({success : true, productId : JSON.parse(cachedData)})
 
         const product = await Product.findById(productId);
-        client.setex(`product:_Id:${productId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(product))
+        client.set(`product:_Id:${productId}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(product))
+        client.expire(`product:_Id:${productId}`, process.env.DEFAULT_EXPIRATION);
         res.status(200).json({ success: true, product });
     } catch (error) {
         throw new Error(error);

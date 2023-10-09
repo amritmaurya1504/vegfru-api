@@ -126,7 +126,8 @@ const getAllStore = asyncHandler(async (req, res) => {
                 select: "name email"
             }
         );
-        client.setex(`stores:vendorId:${req.user._id}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        client.set(`stores:vendorId:${req.user._id}`, JSON.stringify(stores));
+        client.expire(`stores:vendorId:${req.user._id}`, process.env.DEFAULT_EXPIRATION)
         res.json({ success: true, stores }).status(200);
     } catch (error) {
         throw new Error(error);
@@ -150,7 +151,8 @@ const getStoreById = asyncHandler(async (req, res) => {
                 select: "name email"
             }   
         );
-        client.setex(`store:_id${storeId}` , process.env.DEFAULT_EXPIRATION, JSON.stringify(stores));
+        client.set(`store:_id${storeId}` , JSON.stringify(stores));
+        client.expire(`store:_id${storeId}` , process.env.DEFAULT_EXPIRATION)
         res.status(200).json({ success: true, stores });
     } catch (error) {
         throw new Error(error);

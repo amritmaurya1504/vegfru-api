@@ -72,7 +72,8 @@ const getOrderVendor = asyncHandler(async (req, res) => {
                 select: "address place landmark"
             })
 
-        client.setex(`vendor${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
+        client.set(`vendor${req.user._id}:allOrder`, JSON.stringify(orderData));
+        client.expire(`vendor${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION)
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
@@ -101,7 +102,8 @@ const getOrderCustomer = asyncHandler(async (req, res) => {
                 select: "address place landmark"
             })
 
-        client.setex(`customer${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
+        client.set(`customer${req.user._id}:allOrder`, JSON.stringify(orderData));
+        client.expire(`customer${req.user._id}:allOrder`, process.env.DEFAULT_EXPIRATION)
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
@@ -132,7 +134,7 @@ const getOrderByIdVendor = asyncHandler(async (req, res) => {
                 select: "address place landmark"
             })
 
-        client.setex(`vendor:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
+        client.set(`vendor:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
@@ -162,7 +164,8 @@ const getOrderByIdCustomer = asyncHandler(async (req, res) => {
                 select: "address place landmark"
             })
 
-        client.setex(`customer:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION, JSON.stringify(orderData));
+        client.set(`customer:${req.user._id}:orderById:${_id}`,JSON.stringify(orderData));
+        client.expire(`customer:${req.user._id}:orderById:${_id}`, process.env.DEFAULT_EXPIRATION)
         res.status(200);
         res.json({ success: true, orderData })
     } catch (error) {
