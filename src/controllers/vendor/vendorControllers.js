@@ -3,7 +3,7 @@ const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const Store = require("../../models/vendor/storeModel");
-const { client } = require("../../cache/redisClient")
+const { client } = require("../../redis/redisClient")
 
 
 // Authentication Route

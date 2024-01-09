@@ -3,7 +3,7 @@ const Address = require("../../models/client/addressModel")
 const Store = require("../../models/vendor/storeModel")
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
-const { client } = require("../../cache/redisClient");
+const { client } = require("../../redis/redisClient");
 const { generateTokens, verifyRefreshToken } = require("../../util");
 
 

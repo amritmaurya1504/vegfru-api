@@ -1,5 +1,6 @@
 const { createClient } = require('redis');
 
+// FOR PRODUCTION
 const client = createClient({
     password: `${process.env.REDIS_PASSWORD}`,
     socket: {
@@ -7,6 +8,12 @@ const client = createClient({
         port: process.env.REDIS_PORT
     }
 });
+
+// FOR DEVELOPEMT
+// const client = createClient({
+//     host: process.env.REDIS_HOST,
+//     port: process.env.REDIS_PORT
+// });
 
 (async () => {
     try {

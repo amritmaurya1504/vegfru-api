@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler")
 const Product = require("../../models/products/productModel");
-const { client } = require("../../cache/redisClient")
+const { client } = require("../../redis/redisClient")
 
 
 const addProduct = asyncHandler(async (req, res) => {

@@ -1,7 +1,7 @@
 const Razorpay = require("razorpay")
 const asyncHandler = require("express-async-handler")
 const Order = require("../../models/order/orderModel")
-const { client } = require("../../cache/redisClient")
+const { client } = require("../../redis/redisClient")
 
 
 var receptNumber = 1

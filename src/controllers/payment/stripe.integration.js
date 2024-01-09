@@ -3,7 +3,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY)
 const nodemailer = require("nodemailer")
 const MailGen = require("mailgen")
 const Order = require("../../models/order/orderModel")
-const { client } = require("../../cache/redisClient");
+const { client } = require("../../redis/redisClient");
 const asyncHandler = require("express-async-handler")
 let endpointSecret;
 
